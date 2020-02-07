@@ -1,6 +1,3 @@
-# LeetCode
- 用于记录LeetCode上的做题记录
-
 [toc]
 
 ---
@@ -66,6 +63,42 @@ var lengthOfLongestSubstring = function (s) {
   return max
 };
 
+```
+
+---
+
+# 11. 盛最多水的容器（中等）
+给定 n 个非负整数 a1，a2，...，an，每个数代表坐标中的一个点(i,ai) 。在坐标内画 n 条垂直线，垂直线 i的两个端点分别为(i,ai) 和 (i, 0)。找出其中的两条线，使得它们与x轴共同构成的容器可以容纳最多的水。
+
+说明：你不能倾斜容器，且n的值至少为 2。
+![image](https://aliyun-lc-upload.oss-cn-hangzhou.aliyuncs.com/aliyun-lc-upload/uploads/2018/07/25/question_11.jpg)  
+
+> 图中垂直线代表输入数组 [1,8,6,2,5,4,8,3,7]。在此情况下，容器能够容纳水（表示为蓝色部分）的最大值为 49。
+
+
+```javascript
+/**
+ * 容纳的水，取决于两边短的那部分，所以首先我们先找到两边最短的，然后算出容积存储起来，然后判断，如果左边低则往右，右边低则往左，这样确保还能找到比当前更大的容积
+ *
+ * @param {number[]} height
+ * @return {number}
+ */
+var maxArea = function (height) {
+  let len = height.length
+  let start = 0
+  let end = len - 1
+  let max = 0
+  while (start <= end) {
+    let min = Math.min(height[start], height[end])
+    max = Math.max(max, min * (end - start))
+    if (height[start] > height[end]) {
+      end--
+    } else {
+      start++
+    }
+  }
+  return max
+};
 ```
 
 ---
@@ -1238,6 +1271,37 @@ var maxDepth = function (root) {
 ```
 ---
 
+
+# 118. 二叉树的最大深度（简单）
+给定一个非负整数 numRows，生成杨辉三角的前 numRows 行。
+![image](https://upload.wikimedia.org/wikipedia/commons/0/0d/PascalTriangleAnimated2.gif)  
+在杨辉三角中，每个数是它左上方和右上方的数的和。
+
+```javascript
+/**
+ * @param {number} numRows
+ * @return {number[][]}
+ */
+var generate = function (numRows) {
+  let res = []
+  for (let i = 1; i <= numRows; i++) {
+    res.push([])
+    for (let j = 1; j <= i; j++) {
+      if (j === 1 || j === i) {
+        res[i - 1].push(1)
+      } else {
+        if (i >= 3) {
+          res[i - 1].push(res[i - 2][j - 2] + res[i - 2][j - 1])
+        }
+      }
+    }
+  }
+  return res
+};
+
+```
+---
+
 # 120. 三角形最小路径和（中等）
 给定一个三角形，找出自顶向下的最小路径和。每一步只能移动到下一行中相邻的结点上。
 ```
@@ -1898,6 +1962,136 @@ var reverseList = function (head) {
 
 ---
 
+
+# 215. 数组中的第K个最大元素（中等）
+在未排序的数组中找到第 k 个最大的元素。请注意，你需要找的是数组排序后的第 k 个最大的元素，而不是第 k 个不同的元素。
+
+示例 1:
+```
+输入: [3,2,1,5,6,4] 和 k = 2
+输出: 5
+```
+示例2:
+```
+输入: [3,2,3,1,2,4,5,5,6] 和 k = 4
+输出: 4
+```
+```javascript
+/**
+ * 方法一：参照阮一峰老师的快速排序（略慢）
+ *
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var findKthLargest = function (nums, k) {
+  return quickSort(nums)[k - 1]
+};
+
+var quickSort = function (nums) {
+  if (nums.length <= 1) return nums
+  const pivotIndex = Math.floor(nums.length / 2)
+  const pivot = nums[pivotIndex]
+  const left = []
+  const right = []
+
+  for (let i = 0; i < nums.length; i++) {
+    if (i === pivotIndex) continue
+    if (nums[i] > pivot) {
+      left.push(nums[i])
+    } else {
+      right.push(nums[i])
+    }
+  }
+  return quickSort(left).concat(pivot, quickSort(right))
+}
+
+
+/**
+ * 方法二：正常的快速排序，上课学的（略慢）
+ *
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var findKthLargest = function (nums, k) {
+  const len = nums.length
+  quickSort(nums, 0, len - 1)
+  return nums[len - k]
+};
+
+var quickSort = function (nums, start, end) {
+  if (start >= end) return nums
+  let pivot = nums[start]
+  let left = start
+  let right = end
+
+  while (left < right) {
+    while (nums[right] >= pivot && left < right) {
+      right--
+    }
+    nums[left] = nums[right]
+    while (nums[left] <= pivot && left < right) {
+      left++
+    }
+    nums[right] = nums[left]
+  }
+  nums[left] = pivot
+
+  quickSort(nums, start, left - 1)
+  quickSort(nums, left + 1, end)
+  return nums
+}
+
+
+/**
+ * 方法三: 因为问的是第K大，那么我们只需要排序一边即可，因为只需要找到第K大，所以不需要对整个数组都排序
+ *
+ * @param {number[]} nums
+ * @param {number} k
+ * @return {number}
+ */
+var findKthLargest = function (nums, k) {
+  const len = nums.length
+  let left = 0
+  let right = len - 1
+  let target = len - k
+  while (true) {
+    const pivot = quickSort(nums, left, right)
+    if (pivot === target) {
+      return nums[pivot]
+    } else if (pivot < target) {
+      left = pivot + 1
+    } else {
+      right = pivot - 1
+    }
+  }
+};
+
+var quickSort = function (nums, start, end) {
+  if (start >= end) return start
+  let pivot = nums[start]
+  let left = start
+  let right = end
+
+  while (left < right) {
+    while (nums[right] >= pivot && left < right) {
+      right--
+    }
+    while (nums[left] <= pivot && left < right) {
+      left++
+    }
+    if (left >= right) break
+    [nums[left], nums[right]] = [nums[right], nums[left]]
+  }
+  nums[start] = nums[left]
+  nums[left] = pivot
+  return left
+}
+```
+
+---
+
 # 234. 回文链表（简单）
 请判断一个链表是否为回文链表。
 ```
@@ -2300,6 +2494,160 @@ var findDuplicate = function (nums) {
 };
 ```
 
+
+---
+
+# 314. 扁平化嵌套列表迭代器（中等）
+给你一个嵌套的整型列表。请你设计一个迭代器，使其能够遍历这个整型列表中的所有整数。
+
+列表中的每一项或者为一个整数，或者是另一个列表。
+
+示例 1:
+```
+输入: [[1,1],2,[1,1]]
+输出: [1,1,2,1,1]
+解释: 通过重复调用next 直到hasNext 返回 false，next返回的元素的顺序应该是: [1,1,2,1,1]。
+```
+示例 2:
+```
+输入: [1,[4,[6]]]
+输出: [1,4,6]
+解释: 通过重复调用next直到hasNext 返回 false，next返回的元素的顺序应该是: [1,4,6]。
+
+```
+```javascript
+/**
+ * // This is the interface that allows for creating nested lists.
+ * // You should not implement it, or speculate about its implementation
+ * function NestedInteger() {
+ *
+ *     Return true if this NestedInteger holds a single integer, rather than a nested list.
+ *     @return {boolean}
+ *     this.isInteger = function() {
+ *         ...
+ *     };
+ *
+ *     Return the single integer that this NestedInteger holds, if it holds a single integer
+ *     Return null if this NestedInteger holds a nested list
+ *     @return {integer}
+ *     this.getInteger = function() {
+ *         ...
+ *     };
+ *
+ *     Return the nested list that this NestedInteger holds, if it holds a nested list
+ *     Return null if this NestedInteger holds a single integer
+ *     @return {NestedInteger[]}
+ *     this.getList = function() {
+ *         ...
+ *     };
+ * };
+ */
+/**
+ * @constructor
+ * @param {NestedInteger[]} nestedList
+ */
+var NestedIterator = function (nestedList) {
+  this.res = []
+  this.init(nestedList)
+};
+NestedIterator.prototype.init = function (list) {
+  for (let i = 0; i < list.length ; i++) {
+    const cur = list[i]
+    if (!cur.isInteger()) {
+      this.init(cur.getList())
+    } else {
+      this.res.push(cur.getInteger())
+    }
+  }
+};
+
+/**
+ * @this NestedIterator
+ * @returns {boolean}
+ */
+NestedIterator.prototype.hasNext = function () {
+  return this.res.length > 0
+};
+
+/**
+ * @this NestedIterator
+ * @returns {integer}
+ */
+NestedIterator.prototype.next = function () {
+  return this.res.shift()
+};
+
+/**
+ * Your NestedIterator will be called like this:
+ * var i = new NestedIterator(nestedList), a = [];
+ * while (i.hasNext()) a.push(i.next());
+*/
+```
+
+---
+
+---
+
+# 328. 奇偶链表（中等）
+给定一个单链表，把所有的奇数节点和偶数节点分别排在一起。请注意，这里的奇数节点和偶数节点指的是节点编号的奇偶性，而不是节点的值的奇偶性。
+
+请尝试使用原地算法完成。你的算法的空间复杂度应为 O(1)，时间复杂度应为 O(nodes)，nodes 为节点总数。
+
+示例 1:
+```
+输入: 1->2->3->4->5->NULL
+输出: 1->3->5->2->4->NULL
+```
+示例 2:
+```
+输入: 2->1->3->5->6->4->7->NULL 
+输出: 2->3->6->7->1->5->4->NULL
+```
+说明:
+```
+应当保持奇数节点和偶数节点的相对顺序。
+链表的第一个节点视为奇数节点，第二个节点视为偶数节点，以此类推。
+
+```
+```javascript
+/**
+ * Definition for singly-linked list.
+ * function ListNode(val) {
+ *     this.val = val;
+ *     this.next = null;
+ * }
+ */
+/**
+ * @param {ListNode} head
+ * @return {ListNode}
+ */
+var oddEvenList = function (head) {
+  let curIndex = 1
+  let oddHead = new ListNode()
+  let evenHead = new ListNode()
+  let odd = oddHead
+  let even = evenHead
+  let curNode = head
+  while (curNode != null) {
+    if (curIndex % 2 !== 0) {
+      odd.next = curNode
+      odd = odd.next
+    } else {
+      even.next = curNode
+      even = even.next
+    }
+    curNode = curNode.next
+    curIndex++
+  }
+  odd.next = evenHead.next
+  even.next = null
+  return oddHead.next
+};
+```
+
+---
+
+
 ---
 
 # 334. 递增的三元序列（中等）
@@ -2381,6 +2729,96 @@ var countBits = function (num) {
   }
   return res
 };
+```
+
+---
+
+---
+
+# 341. 比特位记数（中等）
+给定一个嵌套的整型列表。设计一个迭代器，使其能够遍历这个整型列表中的所有整数。
+
+列表中的项或者为一个整数，或者是另一个列表。
+
+示例 1:
+```
+输入: [[1,1],2,[1,1]]
+输出: [1,1,2,1,1]
+解释: 通过重复调用next 直到hasNext 返回false，next返回的元素的顺序应该是: [1,1,2,1,1]。
+```
+示例 2:
+```
+输入: [1,[4,[6]]]
+输出: [1,4,6]
+解释: 通过重复调用next直到hasNext 返回false，next返回的元素的顺序应该是: [1,4,6]。
+```
+```javascript
+/**
+ * // This is the interface that allows for creating nested lists.
+ * // You should not implement it, or speculate about its implementation
+ * function NestedInteger() {
+ *
+ *     Return true if this NestedInteger holds a single integer, rather than a nested list.
+ *     @return {boolean}
+ *     this.isInteger = function() {
+ *         ...
+ *     };
+ *
+ *     Return the single integer that this NestedInteger holds, if it holds a single integer
+ *     Return null if this NestedInteger holds a nested list
+ *     @return {integer}
+ *     this.getInteger = function() {
+ *         ...
+ *     };
+ *
+ *     Return the nested list that this NestedInteger holds, if it holds a nested list
+ *     Return null if this NestedInteger holds a single integer
+ *     @return {NestedInteger[]}
+ *     this.getList = function() {
+ *         ...
+ *     };
+ * };
+ */
+/**
+ * @constructor
+ * @param {NestedInteger[]} nestedList
+ */
+var NestedIterator = function (nestedList) {
+  this.res = []
+  this.init(nestedList)
+};
+NestedIterator.prototype.init = function (list) {
+  for (let i = 0; i < list.length ; i++) {
+    const cur = list[i]
+    if (!cur.isInteger()) {
+      this.init(cur.getList())
+    } else {
+      this.res.push(cur.getInteger())
+    }
+  }
+};
+
+/**
+ * @this NestedIterator
+ * @returns {boolean}
+ */
+NestedIterator.prototype.hasNext = function () {
+  return this.res.length > 0
+};
+
+/**
+ * @this NestedIterator
+ * @returns {integer}
+ */
+NestedIterator.prototype.next = function () {
+  return this.res.shift()
+};
+
+/**
+ * Your NestedIterator will be called like this:
+ * var i = new NestedIterator(nestedList), a = [];
+ * while (i.hasNext()) a.push(i.next());
+*/
 ```
 
 ---
@@ -2557,6 +2995,66 @@ var kthSmallest = function (matrix, k) {
 ---
 
 
+# 412. Fizz Buzz（简单）
+写一个程序，输出从 1 到 n 数字的字符串表示。
+
+1. 如果n是3的倍数，输出“Fizz”；
+
+2. 如果n是5的倍数，输出“Buzz”；
+
+3.如果n同时是3和5的倍数，输出 “FizzBuzz”。
+
+示例：
+```
+n = 15,
+
+返回:
+[
+    "1",
+    "2",
+    "Fizz",
+    "4",
+    "Buzz",
+    "Fizz",
+    "7",
+    "8",
+    "Fizz",
+    "Buzz",
+    "11",
+    "Fizz",
+    "13",
+    "14",
+    "FizzBuzz"
+]
+
+```
+```javascript
+/**
+ * @param {number} n
+ * @return {string[]}
+ */
+var fizzBuzz = function (n) {
+  let res = []
+  for (let i = 1; i <= n; i++) {
+    if (i % 3 === 0 && i % 5 === 0) {
+      res.push('FizzBuzz')
+    } else if (i % 3 === 0) {
+      res.push('Fizz')
+    } else if (i % 5 === 0) {
+      res.push('Buzz')
+    }
+    else {
+      res.push(i.toString())
+    }
+  }
+  return res
+};
+
+```
+
+---
+
+
 # 461. 汉明距离（简单）
 两个整数之间的汉明距离指的是这两个数字对应二进制位不同的位置的数目。
 
@@ -2578,9 +3076,6 @@ var kthSmallest = function (matrix, k) {
 
 上面的箭头指出了对应二进制位不同的位置。
 
-来源：力扣（LeetCode）
-链接：https://leetcode-cn.com/problems/hamming-distance
-著作权归领扣网络所有。商业转载请联系官方授权，非商业转载请注明出处。
 ```
 ```javascript
 /**
@@ -3899,3 +4394,75 @@ var makeConnected = function (n, connections) {
 ```
 
 ---
+
+# 5330. 分裂二叉树的最大乘积（中等）（周赛）
+给你一棵二叉树，它的根为root 。请你删除 1 条边，使二叉树分裂成两棵子树，且它们子树和的乘积尽可能大。
+
+由于答案可能会很大，请你将结果对 10^9 + 7 取模后再返回。
+
+示例 1：
+```
+输入：root = [1,2,3,4,5,6]
+输出：110
+解释：删除红色的边，得到 2 棵子树，和分别为 11 和 10 。它们的乘积是 110 （11*10）
+```
+示例 2：
+```
+输入：root = [1,null,2,3,4,null,null,5,6]
+输出：90
+解释：移除红色的边，得到 2 棵子树，和分别是 15 和 6 。它们的乘积为 90 （15*6）
+```
+示例 3：
+```
+输入：root = [2,3,9,10,7,8,6,5,4,11,1]
+输出：1025
+```
+示例 4：
+```
+输入：root = [1,1]
+输出：1
+```
+
+提示：
+```
+每棵树最多有50000个节点，且至少有2个节点。
+每个节点的值在[1, 10000]之间。
+```
+```javascript
+/**
+ * Definition for a binary tree node.
+ * function TreeNode(val) {
+ *     this.val = val;
+ *     this.left = this.right = null;
+ * }
+ */
+/**
+ * @param {TreeNode} root
+ * @return {number}
+ */
+var maxProduct = function (root) {
+  let res = 0
+  const list = []
+  // 求和函数，计算每个节点的全部子节点的和
+  var sumNode = function (node) {
+    if (node === null) return 0
+    const left = sumNode(node.left)
+    const right = sumNode(node.right)
+    const sum = left + right + node.val
+    // 将每个节点的和添加到列表里面
+    list.push(sum)
+    return sum
+  }
+  // 树的总和
+  const total = sumNode(root)
+  for (let i = 0; i < list.length; i++) {
+    // 分隔之后，分成两半
+    // 但是加起来的和是整个树的和，所以直接相乘即可
+    let curSum = list[i] * (total - list[i])
+    res = Math.max(res, curSum)
+  }
+  return res % (10 ** 9 + 7)
+};
+
+
+```
